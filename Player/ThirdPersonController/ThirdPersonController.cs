@@ -7,9 +7,10 @@ public class ThirdPersonController : MonoBehaviour
     public float movementSpeed = 10.0f;
     public float rotationSpeed = 100.0f;
     private CharacterController controller;
-    public float gravity = 10f;
-    private bool groundedPlayer;
-    private Vector3 playerVelocity;
+    private bool grounded;
+    private float jumpHeight = 1.0f;
+    private float gravityValue = -9.0f;
+    private Vector3 velocity;
 
     private void Start()
     {
@@ -32,13 +33,20 @@ public class ThirdPersonController : MonoBehaviour
             gameObject.transform.Rotate(0,move.x,0);
         }
 
-        groundedPlayer = controller.isGrounded;
-        if (groundedPlayer && playerVelocity.y < 0)
+        grounded = controller.isGrounded;
+
+        if (grounded && velocity.y < 0)
         {
-            playerVelocity.y = 0f;
+            velocity.y = 0f;
+        }
+        
+        if (Input.GetButtonDown("Jump") && grounded)
+        {
+            velocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
         }
 
-        playerVelocity.y += gravity * Time.deltaTime;
-        controller.Move(playerVelocity * Time.deltaTime);
+        velocity.y += gravityValue * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+
     }
 }
