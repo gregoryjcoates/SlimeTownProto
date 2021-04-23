@@ -6,7 +6,7 @@ public class ThirdPersonController : MonoBehaviour
 {
     public float movementSpeed = 10.0f;
     public float rotationSpeed = 100.0f;
-    private CharacterController controller;
+    public CharacterController controller;
     private bool grounded;
     private float jumpHeight = 5.0f;
     private float gravityValue = -200.0f;
@@ -16,11 +16,11 @@ public class ThirdPersonController : MonoBehaviour
     {
         controller= gameObject.AddComponent<CharacterController>();
     }
+    
 
     // Update is called once per frame
     void Update()
     {
-
         grounded = controller.isGrounded;
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, Mathf.Infinity, layerMask ))
