@@ -22,7 +22,9 @@ public class MapCreation : MonoBehaviour
     public float alpha4 = 0.5f;
     public Terrain mainTerrain;
 
-    
+
+
+    public GameObject WarpPoint;
     
     // set sizes for each biome area and generate biomes. 
 
@@ -33,16 +35,23 @@ public class MapCreation : MonoBehaviour
         {
             PaintTerrain();
         }
+
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            PlaceWarpPoints();
+        }
     }
 
     public void PaintTerrain()
     {
 
-
+        int tHeight = MapSize().tHeight;
+        int tWidth = MapSize().tWidth;
+        float[,,] map = MapSize().map;
         
-        float[,,] map = new float[mainTerrain.terrainData.alphamapWidth,mainTerrain.terrainData.alphamapHeight, 3];
-        int tHeight = mainTerrain.terrainData.alphamapHeight / 2;
-        int tWidth = mainTerrain.terrainData.alphamapWidth / 2;
+       // float[,,] map = new float[mainTerrain.terrainData.alphamapWidth,mainTerrain.terrainData.alphamapHeight, 3];
+      //  int tHeight = mainTerrain.terrainData.alphamapHeight / 2;
+      //  int tWidth = mainTerrain.terrainData.alphamapWidth / 2;
 
         // create quadrants
         // q24
@@ -93,4 +102,62 @@ public class MapCreation : MonoBehaviour
         // }
         mainTerrain.terrainData.SetAlphamaps(0, 0, map);
     }
+
+    void MapSections()
+    {
+        // code for creating subsections and zones of the map
+    }
+
+    public void PlaceWarpPoints()
+    {
+
+
+        int numberWarpSets = 5;
+
+        int mapHeight = MapSize().tHeight;
+        int mapWidth = MapSize().tWidth;
+
+        // early code for initializing and placing warp points
+
+        for (int i = 0; i < numberWarpSets ;i++)
+        {
+
+            //  prelimiary code for placing warp points on the map
+            float x = Random.Range(10, mapWidth - 10);
+            float z = Random.Range(10, mapHeight -10);
+
+            float x2 = Random.Range(10, mapWidth - 10);
+            float z2 = Random.Range(10, mapHeight - 10);
+
+
+            Vector3 warpLocationOne = new Vector3(x, 0, z);
+            Vector3 warpLocationTwo = new Vector3(x2, 0, z2);
+
+            GameObject warpPointOne = Instantiate(WarpPoint, warpLocationOne, Quaternion.identity);
+            GameObject warpPointTwo = Instantiate(WarpPoint, warpLocationTwo, Quaternion.identity);
+            
+            WarpSystem warpTargetOne = warpPointOne.GetComponent<WarpSystem>();
+            WarpSystem warptargetTwo = warpPointTwo.GetComponent<WarpSystem>();
+
+            warpTargetOne.warpTarget = warpLocationTwo - new Vector3(0,0,3);
+            warptargetTwo.warpTarget = warpLocationOne - new Vector3(0,0,3);
+
+            Debug.Log(warpLocationOne);
+            Debug.Log(warpLocationTwo);
+
+        }
+
+    }
+
+
+    // gets the terrain data for the gameobject this script is attached to, specifically the width and height. returns all 3
+    public (int tHeight,int tWidth,float[,,] map) MapSize()
+    {
+        float[,,] map = new float[mainTerrain.terrainData.alphamapWidth, mainTerrain.terrainData.alphamapHeight, 3];
+        int tHeight = mainTerrain.terrainData.alphamapHeight / 2;
+        int tWidth = mainTerrain.terrainData.alphamapWidth / 2;
+
+        return (tHeight,tWidth,map);
+    }
+
 }

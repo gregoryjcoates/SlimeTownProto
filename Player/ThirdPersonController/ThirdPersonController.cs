@@ -12,7 +12,10 @@ public class ThirdPersonController : MonoBehaviour
     private float gravityValue = -200.0f;
     private Vector3 velocity;
     private int layerMask = 1;
+
+    public Vector3 playerLocation;
     private void Start()
+
     {
         controller= gameObject.AddComponent<CharacterController>();
     }
@@ -53,7 +56,7 @@ public class ThirdPersonController : MonoBehaviour
             Debug.Log("jump");
             velocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
         }
-
+        playerLocation = gameObject.transform.position;
         velocity.y += gravityValue * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 
