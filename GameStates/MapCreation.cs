@@ -48,15 +48,16 @@ public class MapCreation : MonoBehaviour
         int tHeight = MapSize().tHeight;
         int tWidth = MapSize().tWidth;
         float[,,] map = MapSize().map;
-        
-       // float[,,] map = new float[mainTerrain.terrainData.alphamapWidth,mainTerrain.terrainData.alphamapHeight, 3];
-      //  int tHeight = mainTerrain.terrainData.alphamapHeight / 2;
-      //  int tWidth = mainTerrain.terrainData.alphamapWidth / 2;
+
+        // float[,,] map = new float[mainTerrain.terrainData.alphamapWidth,mainTerrain.terrainData.alphamapHeight, 3];
+        //  int tHeight = mainTerrain.terrainData.alphamapHeight / 2;
+        //  int tWidth = mainTerrain.terrainData.alphamapWidth / 2;
 
         // create quadrants
         // q24
         // q13
         // quarant 1 bottom left
+        #region Quadrant Creation and painting
         for (int i = 0; i < tHeight;i++)
         {
             for (int i2 = 0; i2 < tWidth; i2++)
@@ -94,6 +95,7 @@ public class MapCreation : MonoBehaviour
                 map[i, i2, texture4TopRight] = alpha4;
             }
         }
+#endregion
 
         //causes a black line through the map??
         // for (int i = 0; i<512;i++)

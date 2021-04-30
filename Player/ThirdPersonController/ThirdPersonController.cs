@@ -28,7 +28,7 @@ public class ThirdPersonController : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, Mathf.Infinity, layerMask ))
         {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * hit.distance, Color.yellow);
+            
         }
 
 
@@ -60,5 +60,27 @@ public class ThirdPersonController : MonoBehaviour
         velocity.y += gravityValue * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 
+
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            PlayerAttack();
+        }
+
+    }
+
+
+    // attack detects that the target hit is an enemy and brings their health down by 1
+    void PlayerAttack()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask))
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * hit.distance, Color.red);
+            if (hit.collider.gameObject.tag == "Enemy")
+            {
+                GameObject a = hit.collider.gameObject;
+                a.GetComponent<Enemy2>().enemyHealth -= 1;
+            }
+        }
     }
 }
