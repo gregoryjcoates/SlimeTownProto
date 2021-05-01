@@ -15,9 +15,5 @@ public class Enemy2 : EnemyBase
         EnemyBrain(damage, speed);
         PlayerNear();
         Death(enemyHealth, slimeValue);
-        if (PlayerNear() == true)
-        {
-            Debug.Log(damage);
-        }
     }
 }

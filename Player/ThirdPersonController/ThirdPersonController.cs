@@ -72,6 +72,7 @@ public class ThirdPersonController : MonoBehaviour
     // attack detects that the target hit is an enemy and brings their health down by 1
     void PlayerAttack()
     {
+        int layerMask = 1 << 6;
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask))
         {

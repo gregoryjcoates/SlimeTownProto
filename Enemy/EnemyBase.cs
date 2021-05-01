@@ -11,9 +11,10 @@ public class EnemyBase : MonoBehaviour
     // Enemy controller
     bool moved = false;
     float moveTimer = 0;
-    bool timerEnded =true;
+    bool timerEnded = true;
     CharacterController controller;
-
+    public bool trapped = false;
+    int layerMask = 1 << 7;
 
     private void Start()
     {
@@ -27,9 +28,14 @@ public class EnemyBase : MonoBehaviour
     // Where the enemy decides what to do based
     public void EnemyBrain(int damage, int speed)
     {
+        if (trapped == true)
+        {
+            moved = true;
+        }
+
         if (moved == false)
         {
-            if (PathBlocked() == false)
+            if (PathBlocked() == false )
             {
                 controller.Move(Movement());
                 moved = true;
@@ -50,11 +56,21 @@ public class EnemyBase : MonoBehaviour
         else if (moved == true & timerEnded == true)
         {
             moveTimer = Random.Range(0.3f, 1f);
+            Debug.Log("move timer called");
+
+            if (trapped == true)
+            {
+                Debug.Log("trap timer set");
+                moveTimer += 1f;
+                trapped = false;
+            }
+
             timerEnded = false;
         }
         else if (moved == true & timerEnded == false)
         {
             moveTimer -= Time.deltaTime;
+            Debug.Log(moveTimer);
             if (moveTimer <= 0)
             {
                 timerEnded = true;
@@ -66,7 +82,6 @@ public class EnemyBase : MonoBehaviour
     // uses a ray to detect player
    public bool PlayerNear(float distance = 10)
     {
-        int layerMask = 1;
         RaycastHit hit;
 
         if (Physics.Raycast(transform.position,transform.TransformDirection(Vector3.forward),out hit, distance,layerMask))
@@ -120,8 +135,6 @@ public class EnemyBase : MonoBehaviour
     // does damage to player
     void AttackPlayer(int damage)
     {
-        int layerMask = 1 << 8;
-        layerMask = ~layerMask;
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask))
         {
@@ -144,4 +157,8 @@ public class EnemyBase : MonoBehaviour
         }
     }
 
+    public void Trapped(bool a)
+    {
+        trapped = a;
+    }
 }
