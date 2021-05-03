@@ -56,11 +56,10 @@ public class EnemyBase : MonoBehaviour
         else if (moved == true & timerEnded == true)
         {
             moveTimer = Random.Range(0.3f, 1f);
-            Debug.Log("move timer called");
+
 
             if (trapped == true)
             {
-                Debug.Log("trap timer set");
                 moveTimer += 1f;
                 trapped = false;
             }
@@ -70,7 +69,6 @@ public class EnemyBase : MonoBehaviour
         else if (moved == true & timerEnded == false)
         {
             moveTimer -= Time.deltaTime;
-            Debug.Log(moveTimer);
             if (moveTimer <= 0)
             {
                 timerEnded = true;

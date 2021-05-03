@@ -28,7 +28,7 @@ public class ThirdPersonController : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, Mathf.Infinity, layerMask ))
         {
-            
+
         }
 
 
