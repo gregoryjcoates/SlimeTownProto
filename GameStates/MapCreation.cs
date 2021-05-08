@@ -165,13 +165,16 @@ public class MapCreation : MonoBehaviour
         {
             float a = Random.Range(0, tHeight);
             float b = Random.Range(0, tWidth);
+
             float y = mainTerrain.terrainData.GetHeight(System.Convert.ToInt32(tWidth), System.Convert.ToInt32(tHeight));
 
             // need distance to bottom of object being placed;
 
             Vector3 placeHome = new Vector3(a, y, b);
+
             // float checkHeight = SlimeHome.GetComponent<MeshFilter>().sharedMesh.bounds.extents.y;
             float checkHeight = SlimeHome.GetComponent<Renderer>().bounds.size.y/2;
+
             Debug.Log(checkHeight);
             Debug.Log("this is the location"+placeHome);
 

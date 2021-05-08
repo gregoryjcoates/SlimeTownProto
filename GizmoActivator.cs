@@ -9,6 +9,6 @@ public class GizmoActivator : MonoBehaviour
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(transform.position, transform.localScale+new Vector3(1,0,1)); 
+        Gizmos.DrawWireCube(transform.position, transform.localScale);
     }
 }

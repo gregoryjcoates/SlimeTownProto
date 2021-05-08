@@ -32,6 +32,7 @@ public class ThirdPersonController : MonoBehaviour
         }
 
 
+
         Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
         controller.Move(move * Time.deltaTime * movementSpeed);
 
@@ -42,7 +43,7 @@ public class ThirdPersonController : MonoBehaviour
 
         if (move != Vector3.zero)
         {
-            gameObject.transform.Rotate(0,move.x,0);
+            //gameObject.transform.Rotate(0,move.x,0);
         }
         
 
