@@ -11,7 +11,10 @@ public class MapCreationV2 : MonoBehaviour
     // GameObjects
     public Terrain mainTerrain;
     public GameObject slimeHome;
+    public GameObject warpPoint;
     public GameObject tree1;
+    public GameObject lake;
+    public GameObject ruins;
 
     //QuadrantTypes
     enum QuadrantType
@@ -24,6 +27,23 @@ public class MapCreationV2 : MonoBehaviour
     int forest = (int) QuadrantType.Forest;
     int desert = (int) QuadrantType.Desert;
     int village = (int) QuadrantType.Village;
+
+
+    // values for quadrant creation
+    bool slimeHomePlaced = false;
+
+    // Forest
+    bool lakePlaced = false;
+    [SerializeField]
+    int numberOfLakes = 1;
+    bool ruinsPlaced = false;
+    [SerializeField]
+    int numberOfRuins = 1;
+
+
+    // for warp point palcement
+    Vector3[] specialLocations;
+    int specialLocationsCounter = 0;
     // the main function
 
     private void Update()
@@ -32,6 +52,11 @@ public class MapCreationV2 : MonoBehaviour
         {
             MapCreation();
         } 
+    }
+
+    private void Awake()
+    {
+        specialLocations = new Vector3[numberOfLakes+numberOfRuins+1];
     }
     void MapCreation()
     {
@@ -124,7 +149,7 @@ public class MapCreationV2 : MonoBehaviour
 
     void CreateQuadrant(float width, float height, int w, int h,int quadType)
     {
-        int numberOfTrees = ((int)width*(int)height)/40;
+        int numberOfTrees = ((int)width*(int)height)/48;
       //  float x = Random.Range(w, width);
        // float y = Random.Range(h, height);
 
@@ -135,6 +160,93 @@ public class MapCreationV2 : MonoBehaviour
             GameObject treeParent = new GameObject();
             treeParent.name = "Tree Parent";
 
+            // place special areas
+
+            //Place the slimeHome
+            if (slimeHomePlaced == false)
+            {
+                Vector3 checkHeight = slimeHome.GetComponent<Renderer>().bounds.size / 2;
+                float x = Random.Range(w + checkHeight.x + 10f, width - checkHeight.x - 10f);
+                float z = Random.Range(h + checkHeight.z + 10f, height - checkHeight.z - 10f);
+                float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+                Vector3 placementLocation = new Vector3(x, y, z);
+
+
+                //convert to vector3 to get both x and y to keep object within map bounds
+                // float checkHeight = slimeHome.GetComponent<Renderer>().bounds.size.y / 2;
+
+
+
+
+                placementLocation.y += checkHeight.y;
+
+                GameObject SlimeBase = Instantiate(slimeHome, placementLocation, Quaternion.identity);
+                AddSpecialLocationsToArray(placementLocation);
+                slimeHomePlaced = true;
+
+
+            }
+
+            // Place lake
+            if (lakePlaced == false)
+            {
+                for (int i = 0; i < numberOfLakes; i++)
+                {
+                    Vector3 checkHeight = lake.GetComponent<Renderer>().bounds.size / 2;
+                    float x = Random.Range(w + checkHeight.x + 10f, width - checkHeight.x - 10f);
+                    float z = Random.Range(h + checkHeight.z + 10f, height - checkHeight.z - 10f);
+                    float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+
+                    Vector3 placementLocation = new Vector3(x, y, z);
+
+                    placementLocation.y += checkHeight.y;
+
+                    
+                    if (CheckOverlap(placementLocation,lake) == false)
+                    {
+                        GameObject Lake = Instantiate(lake, placementLocation, Quaternion.identity);
+                        AddSpecialLocationsToArray(placementLocation);
+                    }
+                    else
+                    {
+                        i--;
+                    }
+                }
+                lakePlaced = true;
+            }
+
+            // Place ruins
+            if (ruinsPlaced == false)
+            {
+                for (int i = 0; i < numberOfRuins; i++)
+                {
+                    Vector3 checkHeight = ruins.GetComponent<Renderer>().bounds.size / 2;
+
+                    float x = Random.Range(w + checkHeight.x + 10f, width - checkHeight.x - 10f);
+                    float z = Random.Range(h + checkHeight.z + 10f, height - checkHeight.z - 10f);
+
+                    float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+
+                    Vector3 placementLocation = new Vector3(x, y, z);
+
+
+                    placementLocation.y += checkHeight.y;
+
+                    if (CheckOverlap(placementLocation, lake) == false)
+                    {
+                        GameObject Ruins = Instantiate(ruins, placementLocation, Quaternion.identity);
+                        AddSpecialLocationsToArray(placementLocation);
+                    }
+                    else
+                    {
+                        i--;
+                    }
+
+                }
+                ruinsPlaced = true;
+            }
+
+            // Place trees
             for (int i = 0; i < numberOfTrees; i++)
             {
                 //sets the number of trees grouped together
@@ -173,11 +285,61 @@ public class MapCreationV2 : MonoBehaviour
                         }
                     }
 
-                    
-
                 }
           
             }
+
+
+            // place enemies
+
+            // place traps
+
+            // place warp points
+
+
+                int numberWarpSets = 5;
+
+                float mapHeight = MapSize().mapHeight;
+                float mapWidth = MapSize().mapWidth;
+
+                // early code for initializing and placing warp points
+
+                for (int i = 0; i < numberWarpSets; i++)
+                {
+
+                    //  prelimiary code for placing warp points on the map
+                    float x = Random.Range(10, mapWidth - 10);
+                    float z = Random.Range(10, mapHeight - 10);
+
+                    float x2 = Random.Range(10, mapWidth - 10);
+                    float z2 = Random.Range(10, mapHeight - 10);
+
+
+                    Vector3 warpLocationOne = new Vector3(x, 0, z);
+                    Vector3 warpLocationTwo = new Vector3(x2, 0, z2);
+
+                    GameObject warpPointOne = Instantiate(warpPoint, warpLocationOne, Quaternion.identity);
+                    GameObject warpPointTwo = Instantiate(warpPoint, warpLocationTwo, Quaternion.identity);
+
+                    WarpSystem warpTargetOne = warpPointOne.GetComponent<WarpSystem>();
+                    WarpSystem warptargetTwo = warpPointTwo.GetComponent<WarpSystem>();
+
+                    warpTargetOne.warpTarget = warpLocationTwo - new Vector3(0, 0, 3);
+                    warptargetTwo.warpTarget = warpLocationOne - new Vector3(0, 0, 3);
+
+
+                }
+            
+        }
+
+        if (quadType == desert)
+        {
+
+        }
+
+        if (quadType == village)
+        {
+
         }
     }
 
@@ -195,6 +357,7 @@ public class MapCreationV2 : MonoBehaviour
         return map;
     }
 
+
     bool CheckOverlap(Vector3 location, GameObject thingy)
     {
 
@@ -208,5 +371,11 @@ public class MapCreationV2 : MonoBehaviour
         {
             return false;
         }
+    }
+
+    void AddSpecialLocationsToArray(Vector3 location)
+    {
+        specialLocations[specialLocationsCounter] = location;
+        specialLocationsCounter++;
     }
 }
