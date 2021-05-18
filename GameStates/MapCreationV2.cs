@@ -9,12 +9,20 @@ public class MapCreationV2 : MonoBehaviour
     // terrain
     public float alpha = 0.5f;
     // GameObjects
-    public Terrain mainTerrain;
-    public GameObject slimeHome;
-    public GameObject warpPoint;
-    public GameObject tree1;
-    public GameObject lake;
-    public GameObject ruins;
+    [SerializeField]
+    Terrain mainTerrain;
+    [SerializeField]
+    GameObject slimeHome;
+    [SerializeField]
+    GameObject warpPoint;
+    [SerializeField]
+    GameObject tree1;
+    [SerializeField]
+    GameObject lake;
+    [SerializeField] 
+    GameObject ruins;
+    [SerializeField]
+    GameObject enemy1;
 
     //QuadrantTypes
     enum QuadrantType
@@ -31,6 +39,13 @@ public class MapCreationV2 : MonoBehaviour
 
     // values for quadrant creation
     bool slimeHomePlaced = false;
+    // Values for enemy creation
+    [SerializeField]
+    int numberOfEnemies = 100;
+    [SerializeField]
+    int numberOfTraps = 1;
+
+    Dictionary<int, List<Vector3>> enemyLocations = new Dictionary<int, List<Vector3>>();
 
     // Forest
     bool lakePlaced = false;
@@ -41,9 +56,8 @@ public class MapCreationV2 : MonoBehaviour
     int numberOfRuins = 1;
 
 
-    // for warp point palcement
-    Vector3[] specialLocations;
-    int specialLocationsCounter = 0;
+    // for warp point placement
+    Dictionary<string, Vector3> specialLocationCoordinates = new Dictionary<string, Vector3>();
     // the main function
 
     private void Update()
@@ -54,12 +68,12 @@ public class MapCreationV2 : MonoBehaviour
         } 
     }
 
-    private void Awake()
-    {
-        specialLocations = new Vector3[numberOfLakes+numberOfRuins+1];
-    }
+
     void MapCreation()
     {
+        // set number of traps to at least number of enemies
+        numberOfTraps += numberOfEnemies;
+
         // gets the amount of textures currently aded to the terrain 
         AlphaMapQuadrants();
 
@@ -160,6 +174,9 @@ public class MapCreationV2 : MonoBehaviour
             GameObject treeParent = new GameObject();
             treeParent.name = "Tree Parent";
 
+            GameObject enemyParent = new GameObject();
+            enemyParent.name = "Enemy Parent";
+
             // place special areas
 
             //Place the slimeHome
@@ -181,7 +198,10 @@ public class MapCreationV2 : MonoBehaviour
                 placementLocation.y += checkHeight.y;
 
                 GameObject SlimeBase = Instantiate(slimeHome, placementLocation, Quaternion.identity);
-                AddSpecialLocationsToArray(placementLocation);
+
+                //  AddSpecialLocationsToArray(placementLocation);
+
+                specialLocationCoordinates.Add("slimehome", placementLocation);
                 slimeHomePlaced = true;
 
 
@@ -205,7 +225,8 @@ public class MapCreationV2 : MonoBehaviour
                     if (CheckOverlap(placementLocation,lake) == false)
                     {
                         GameObject Lake = Instantiate(lake, placementLocation, Quaternion.identity);
-                        AddSpecialLocationsToArray(placementLocation);
+                        //AddSpecialLocationsToArray(placementLocation);
+                        specialLocationCoordinates.Add("lake" + i, placementLocation);
                     }
                     else
                     {
@@ -235,7 +256,8 @@ public class MapCreationV2 : MonoBehaviour
                     if (CheckOverlap(placementLocation, lake) == false)
                     {
                         GameObject Ruins = Instantiate(ruins, placementLocation, Quaternion.identity);
-                        AddSpecialLocationsToArray(placementLocation);
+                        //  AddSpecialLocationsToArray(placementLocation);
+                        specialLocationCoordinates.Add("ruins" + i, placementLocation);
                     }
                     else
                     {
@@ -265,9 +287,9 @@ public class MapCreationV2 : MonoBehaviour
                     //uses tree location and gets the height of the terrain at that location to ensure proper object height
                     float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
 
-                    if (x > 0 & x < MapSize().mapWidth)
+                    if (x > 0 & x < width)
                     {
-                        if (z > 0 & z < MapSize().mapHeight)
+                        if (z > 0 & z < height)
                         {
 
                             Vector3 placementLocation = new Vector3(x, y, z);
@@ -289,11 +311,81 @@ public class MapCreationV2 : MonoBehaviour
           
             }
 
+            List<GameObject> enemyList = new List<GameObject>();
 
+            enemyList.Add(enemy1);
+
+            int maxEnemies = 10+1;
+
+            for (int i = 0; i < maxEnemies; i++)
+            {
+                enemyList.Add(enemy1);
+            }
+
+            for (int i = 0; i < enemyList.Count-1; i++)
+            {
+                enemyLocations.Add(i,new List<Vector3>());
+            }
+            Debug.Log(enemyList.Count);
+            int spawnThisEnemy = 0;
             // place enemies
+            for (int i = 0; i < numberOfEnemies; i++)
+            {
+                float x = Random.Range(w, width);
+                float z = Random.Range(h, height);
+                float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
 
+
+
+                if (x > 0 & x < width & z > 0 & z < height)
+                {
+                    Vector3 checkHeight = ruins.GetComponent<Renderer>().bounds.size / 2;
+
+                    Vector3 placementLocation = new Vector3(x, y, z);
+                    placementLocation.y += checkHeight.y;
+
+                    // scaling system for placing enemies
+                    float distanceFromBase = Vector3.Distance(specialLocationCoordinates["slimehome"],placementLocation);
+
+                    // gives a number between 0.0 and 1.0 turning distance from slime home into a decimal
+                    float difficultyScale = Mathf.InverseLerp(0f, MapSize().mapWidth, distanceFromBase);
+
+
+                    // the heigher difficulty scale is the stronger the enemies are
+                    if (Random.value <= difficultyScale)
+                    {
+                        spawnThisEnemy = Random.Range(0, maxEnemies);
+
+                        if (Random.value > 0.8f)
+                        {
+                            spawnThisEnemy = Random.Range(8, maxEnemies);
+                        }
+                    }
+                    else
+                    {
+                        spawnThisEnemy = Random.Range(0, maxEnemies-3);
+                    }
+
+
+                    if (CheckOverlap(placementLocation,enemyList[spawnThisEnemy]))
+                    {
+                        GameObject enemy = Instantiate(enemyList[spawnThisEnemy], placementLocation, Quaternion.identity);
+                        enemy.transform.parent = enemyParent.transform;
+                        List<Vector3> a = enemyLocations[spawnThisEnemy];
+                        a.Add(placementLocation);
+
+                    }
+                    else
+                    {
+                        i--;
+                    }
+                }
+            }
             // place traps
+            for (int i = 0; i < numberOfEnemies; i++)
+            {
 
+            }
             // place warp points
 
 
@@ -329,6 +421,17 @@ public class MapCreationV2 : MonoBehaviour
 
 
                 }
+
+            for (int i = 0; i < enemyLocations.Count; i++)
+            {
+                Debug.Log("this is the size/count of enemyLocations "+enemyLocations.Count);
+                List<Vector3> a = enemyLocations[i];
+                
+                for (int l = 0; l < a.Count; l++)
+                {
+                    Debug.Log(a[l]);
+                }
+            }
             
         }
 
@@ -373,9 +476,5 @@ public class MapCreationV2 : MonoBehaviour
         }
     }
 
-    void AddSpecialLocationsToArray(Vector3 location)
-    {
-        specialLocations[specialLocationsCounter] = location;
-        specialLocationsCounter++;
-    }
+
 }
