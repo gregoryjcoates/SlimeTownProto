@@ -22,8 +22,10 @@ public class MapCreationV2 : MonoBehaviour
     [SerializeField] 
     GameObject ruins;
     [SerializeField]
-    GameObject enemy1;
-
+    List<GameObject> trapList = new List<GameObject>();
+    [SerializeField]
+    List<GameObject> enemyList = new List<GameObject>();
+    
     //QuadrantTypes
     enum QuadrantType
     {
@@ -39,14 +41,23 @@ public class MapCreationV2 : MonoBehaviour
 
     // values for quadrant creation
     bool slimeHomePlaced = false;
+    GameObject treeParent;
+
     // Values for enemy creation
+    GameObject enemyParent;
+    int enemyCount = 0;
     [SerializeField]
     int numberOfEnemies = 100;
     [SerializeField]
-    int numberOfTraps = 1;
-
+    int trapsPerEnemy = 1;
+    int maxEnemies = 10 + 1;
+    [SerializeField]
+    int dangerLevelMax = 10;
     Dictionary<int, List<Vector3>> enemyLocations = new Dictionary<int, List<Vector3>>();
 
+    // values for trap placement
+    GameObject trapParent;
+    int trapCount = 0;
     // Forest
     bool lakePlaced = false;
     [SerializeField]
@@ -59,7 +70,15 @@ public class MapCreationV2 : MonoBehaviour
     // for warp point placement
     Dictionary<string, Vector3> specialLocationCoordinates = new Dictionary<string, Vector3>();
     // the main function
-
+    private void Awake()
+    {
+        treeParent = new GameObject();
+        enemyParent = new GameObject();
+        trapParent = new GameObject();
+        treeParent.name = "Tree Parent";
+        enemyParent.name = "Enemy Parent";
+        trapParent.name = "Trap Parent";
+    }
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Alpha9))
@@ -71,8 +90,8 @@ public class MapCreationV2 : MonoBehaviour
 
     void MapCreation()
     {
+
         // set number of traps to at least number of enemies
-        numberOfTraps += numberOfEnemies;
 
         // gets the amount of textures currently aded to the terrain 
         AlphaMapQuadrants();
@@ -161,6 +180,8 @@ public class MapCreationV2 : MonoBehaviour
     //    return quadrantCoordinates;
     //}
 
+
+
     void CreateQuadrant(float width, float height, int w, int h,int quadType)
     {
         int numberOfTrees = ((int)width*(int)height)/48;
@@ -171,11 +192,7 @@ public class MapCreationV2 : MonoBehaviour
         //overlap box is not the right size???? trees should be randomly rotated
         if (quadType == forest)
         {
-            GameObject treeParent = new GameObject();
-            treeParent.name = "Tree Parent";
 
-            GameObject enemyParent = new GameObject();
-            enemyParent.name = "Enemy Parent";
 
             // place special areas
 
@@ -268,65 +285,8 @@ public class MapCreationV2 : MonoBehaviour
                 ruinsPlaced = true;
             }
 
-            // Place trees
-            for (int i = 0; i < numberOfTrees; i++)
-            {
-                //sets the number of trees grouped together
-                int treeGroupSize = Random.Range(1,8);
-                //sets the x and z coordinates of the tree
-                float x = Random.Range(w, width);
-                float z = Random.Range(h, height);
-
-                //places the trees in a group and screws the number slightly to spread them out just a bit
-                for (int a = 0; a < treeGroupSize; a++)
-                {
-                    //screws tree placement
-                    x += Random.Range(-1.5f, 1.5f);
-                    z += Random.Range(-1.5f, 1.5f);
-
-                    //uses tree location and gets the height of the terrain at that location to ensure proper object height
-                    float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
-
-                    if (x > 0 & x < width)
-                    {
-                        if (z > 0 & z < height)
-                        {
-
-                            Vector3 placementLocation = new Vector3(x, y, z);
 
 
-                            if (CheckOverlap(placementLocation, tree1) == false)
-                            {
-                                GameObject tree = Instantiate(tree1, placementLocation, transform.rotation * Quaternion.Euler(0, Random.Range(0, 359), 0));
-                                tree.transform.parent = treeParent.transform;
-                            }
-                        }
-                        else
-                        {
-                            a--;
-                        }
-                    }
-
-                }
-          
-            }
-
-            List<GameObject> enemyList = new List<GameObject>();
-
-            enemyList.Add(enemy1);
-
-            int maxEnemies = 10+1;
-
-            for (int i = 0; i < maxEnemies; i++)
-            {
-                enemyList.Add(enemy1);
-            }
-
-            for (int i = 0; i < enemyList.Count-1; i++)
-            {
-                enemyLocations.Add(i,new List<Vector3>());
-            }
-            Debug.Log(enemyList.Count);
             int spawnThisEnemy = 0;
             // place enemies
             for (int i = 0; i < numberOfEnemies; i++)
@@ -371,25 +331,67 @@ public class MapCreationV2 : MonoBehaviour
                     {
                         GameObject enemy = Instantiate(enemyList[spawnThisEnemy], placementLocation, Quaternion.identity);
                         enemy.transform.parent = enemyParent.transform;
-                        List<Vector3> a = enemyLocations[spawnThisEnemy];
-                        a.Add(placementLocation);
-
+                        SpawnTraps(enemy, placementLocation,w,h,width,height);
+                        enemyCount++;
                     }
                     else
                     {
+                        print("enemies got overlap");
+
                         i--;
                     }
                 }
             }
-            // place traps
-            for (int i = 0; i < numberOfEnemies; i++)
+
+            int treeCount = 0;
+            // Place trees
+            for (int i = 0; i < numberOfTrees; i++)
             {
+                //sets the number of trees grouped together
+                int treeGroupSize = Random.Range(1, 8);
+                //sets the x and z coordinates of the tree
+                float x = Random.Range(w, width);
+                float z = Random.Range(h, height);
+
+                //places the trees in a group and screws the number slightly to spread them out just a bit
+                for (int a = 0; a < treeGroupSize; a++)
+                {
+                    //screws tree placement
+                    x += Random.Range(-1.5f, 1.5f);
+                    z += Random.Range(-1.5f, 1.5f);
+
+                    //uses tree location and gets the height of the terrain at that location to ensure proper object height
+                    float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+
+                    if (x > 0 & x < width)
+                    {
+                        if (z > 0 & z < height)
+                        {
+
+                            Vector3 placementLocation = new Vector3(x, y, z);
+
+
+                            if (CheckOverlap(placementLocation, tree1) == false)
+                            {
+                                GameObject tree = Instantiate(tree1, placementLocation, transform.rotation * Quaternion.Euler(0, Random.Range(0, 359), 0));
+                                tree.transform.parent = treeParent.transform;
+                                treeCount++;
+                            }
+                        }
+                        else
+                        {
+                            a--;
+                        }
+                    }
+
+                }
 
             }
+            Debug.Log("number of trees " + treeCount);
             // place warp points
 
 
-                int numberWarpSets = 5;
+            int numberWarpSets = 5;
 
                 float mapHeight = MapSize().mapHeight;
                 float mapWidth = MapSize().mapWidth;
@@ -421,18 +423,8 @@ public class MapCreationV2 : MonoBehaviour
 
 
                 }
-
-            for (int i = 0; i < enemyLocations.Count; i++)
-            {
-                Debug.Log("this is the size/count of enemyLocations "+enemyLocations.Count);
-                List<Vector3> a = enemyLocations[i];
-                
-                for (int l = 0; l < a.Count; l++)
-                {
-                    Debug.Log(a[l]);
-                }
-            }
-            
+            Debug.Log("this is the number of traps " + trapCount);
+            Debug.Log("this is the number of enemies " + enemyCount);
         }
 
         if (quadType == desert)
@@ -463,16 +455,102 @@ public class MapCreationV2 : MonoBehaviour
 
     bool CheckOverlap(Vector3 location, GameObject thingy)
     {
-
-        Collider[] hits = Physics.OverlapBox(location, thingy.transform.localScale, Quaternion.identity, 1 << 8);
-        if (hits.Length > 0)
+        if (thingy.GetComponent<BoxCollider>() == true)
         {
-            Debug.Log(" I got overlap!");
-            return true;
+            Collider[] hits = Physics.OverlapBox(location, thingy.transform.localScale, Quaternion.identity, 1 << 8);
+            if (hits.Length > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (thingy.GetComponent<CapsuleCollider>() == true)
+        {
+            Collider[] hits = Physics.OverlapCapsule(location, thingy.transform.localScale,  1 << 8);
+            if (hits.Length > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         else
         {
             return false;
+        }
+
+    }
+    int failed = 0;
+    void SpawnTraps(GameObject enemy, Vector3 enemyLocation, float w, float h, float width, float height)
+    {
+
+        int enemyDangerLevel = enemy.GetComponent<Enemy2>().dangerLevel;
+
+
+        for (int i = 0; i < enemyDangerLevel + trapsPerEnemy; i++)
+        {
+            int spawnThisTrap = Random.Range(0, trapList.Count - 1);
+
+            //sets the x and z 
+            float x = enemyLocation.x;
+            float z = enemyLocation.z;
+
+            {
+                //screws tree placement
+
+                x += Random.Range(-13f, 13f);
+                z += Random.Range(-13f, 13f);
+
+                //uses tree location and gets the height of the terrain at that location to ensure proper object height
+                float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+
+
+                if (x > 0 & x < width)
+                {
+                    if (z > 0 & z < height)
+                    {
+                        Vector3 checkHeight = trapList[spawnThisTrap].GetComponent<Renderer>().bounds.size / 2;
+                        Vector3 placementLocation = new Vector3(x, y, z);
+
+                        placementLocation.y += checkHeight.y;
+                        float spawnDistance = Vector3.Distance(placementLocation, enemyLocation);
+
+                        if (spawnDistance >= 2f)
+                        {
+                            if (CheckOverlap(placementLocation, enemy) == false)
+                            {
+                                GameObject trap = Instantiate(trapList[spawnThisTrap], placementLocation, transform.rotation * Quaternion.Euler(0, Random.Range(0, 359), 0));
+                                trap.transform.parent = trapParent.transform;
+                                trapCount++;
+                            }
+                            else
+                            {
+                                Debug.Log("traps got overlap");
+                                i--;
+                            }
+                        }
+                        
+
+                    }
+                    else
+                    {
+                        i--;
+                    }
+                }
+                else
+                {
+                    i--;
+                }
+
+
+
+            }
+
         }
     }
 

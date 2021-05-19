@@ -10,7 +10,10 @@ public class Enemy2 : EnemyBase
     public int speed = 2;
     public int enemyHealth = 5;
     public int slimeValue = 1;
-    public void Update()
+    public int dangerLevel = 5;
+
+
+    void Update()
     {
         EnemyBrain(damage, speed);
         PlayerNear();
