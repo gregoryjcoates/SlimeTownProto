@@ -5,7 +5,6 @@ using UnityEngine;
 public class MapCreationV2 : MonoBehaviour
 {
     // version two of my map creation script implenting complete procedural generation
-
     // terrain
     public float alpha = 0.5f;
     // GameObjects
@@ -179,15 +178,161 @@ public class MapCreationV2 : MonoBehaviour
     //    }
     //    return quadrantCoordinates;
     //}
-
-
-
-    void CreateQuadrant(float width, float height, int w, int h,int quadType)
+    void PlaceTrees(float width, float height, int w, int h, int quadType)
     {
-        int numberOfTrees = ((int)width*(int)height)/48;
-      //  float x = Random.Range(w, width);
-       // float y = Random.Range(h, height);
 
+        int treeCount = 0;
+        int numberOfTrees = ((int)width * (int)height) / 48;
+        // Place trees
+        for (int i = 0; i < numberOfTrees; i++)
+        {
+            //sets the number of trees grouped together
+            int treeGroupSize = Random.Range(1, 8);
+            //sets the x and z coordinates of the tree
+            float x = Random.Range(w, width);
+            float z = Random.Range(h, height);
+
+            //places the trees in a group and screws the number slightly to spread them out just a bit
+            for (int a = 0; a < treeGroupSize; a++)
+            {
+                //screws tree placement
+                x += Random.Range(-1.5f, 1.5f);
+                z += Random.Range(-1.5f, 1.5f);
+
+                //uses tree location and gets the height of the terrain at that location to ensure proper object height
+                float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+
+                if (x > 0 & x < width)
+                {
+                    if (z > 0 & z < height)
+                    {
+
+                        Vector3 placementLocation = new Vector3(x, y, z);
+
+
+                        if (TreeCheckOverlap(placementLocation, tree1) == false)
+                        {
+                            GameObject tree = Instantiate(tree1, placementLocation, transform.rotation * Quaternion.Euler(0, Random.Range(0, 359), 0));
+                            tree.transform.parent = treeParent.transform;
+                            treeCount++;
+                        }
+                        else
+                        {
+                            Debug.Log("trees got overlap");
+                        }
+                    }
+                    else
+                    {
+                        a--;
+                    }
+                }
+
+            }
+
+        }
+        Debug.Log("number of trees " + treeCount);
+    }
+
+    void PlaceBuildings(float width, float height, int w, int h, int quadType)
+    {
+        //Place the slimeHome
+        if (slimeHomePlaced == false)
+        {
+            Vector3 checkHeight = slimeHome.GetComponent<Renderer>().bounds.size / 2;
+            float x = Random.Range(w + checkHeight.x + 10f, width - checkHeight.x - 10f);
+            float z = Random.Range(h + checkHeight.z + 10f, height - checkHeight.z - 10f);
+            float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+            Vector3 placementLocation = new Vector3(x, y, z);
+
+
+            //convert to vector3 to get both x and y to keep object within map bounds
+            // float checkHeight = slimeHome.GetComponent<Renderer>().bounds.size.y / 2;
+
+
+
+
+            placementLocation.y += checkHeight.y;
+
+            GameObject SlimeBase = Instantiate(slimeHome, placementLocation, Quaternion.identity);
+
+            //  AddSpecialLocationsToArray(placementLocation);
+
+            specialLocationCoordinates.Add("slimehome", placementLocation);
+            slimeHomePlaced = true;
+
+
+        }
+    }
+
+    void PlaceZones(float width, float height, int w, int h, int quadType)
+    {
+        // Place lake
+        if (lakePlaced == false)
+        {
+            for (int i = 0; i < numberOfLakes; i++)
+            {
+                Vector3 checkHeight = lake.GetComponent<Renderer>().bounds.size / 2;
+                float x = Random.Range(w + checkHeight.x + 10f, width - checkHeight.x - 10f);
+                float z = Random.Range(h + checkHeight.z + 10f, height - checkHeight.z - 10f);
+                float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+
+                Vector3 placementLocation = new Vector3(x, y, z);
+
+                placementLocation.y += checkHeight.y;
+
+
+                if (CheckOverlap(placementLocation, lake) == false)
+                {
+                    GameObject Lake = Instantiate(lake, placementLocation, Quaternion.identity);
+                    //AddSpecialLocationsToArray(placementLocation);
+                    specialLocationCoordinates.Add("lake" + i, placementLocation);
+                }
+                else
+                {
+                    i--;
+                }
+            }
+            lakePlaced = true;
+        }
+
+        // Place ruins
+        if (ruinsPlaced == false)
+        {
+            for (int i = 0; i < numberOfRuins; i++)
+            {
+                Vector3 checkHeight = ruins.GetComponent<Renderer>().bounds.size / 2;
+
+                float x = Random.Range(w + checkHeight.x + 10f, width - checkHeight.x - 10f);
+                float z = Random.Range(h + checkHeight.z + 10f, height - checkHeight.z - 10f);
+
+                float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+
+                Vector3 placementLocation = new Vector3(x, y, z);
+
+
+                placementLocation.y += checkHeight.y;
+
+                if (CheckOverlap(placementLocation, lake) == false)
+                {
+                    GameObject Ruins = Instantiate(ruins, placementLocation, Quaternion.identity);
+                    //  AddSpecialLocationsToArray(placementLocation);
+                    specialLocationCoordinates.Add("ruins" + i, placementLocation);
+                }
+                else
+                {
+                    i--;
+                }
+
+            }
+            ruinsPlaced = true;
+        }
+    }
+    void CreateQuadrant(float width, float height, int w, int h,int quadType) {
+   
+
+
+        // Place builds like slime home ect
+        PlaceBuildings(width,height,w,h,quadType);
 
         //overlap box is not the right size???? trees should be randomly rotated
         if (quadType == forest)
@@ -195,99 +340,12 @@ public class MapCreationV2 : MonoBehaviour
 
 
             // place special areas
-
-            //Place the slimeHome
-            if (slimeHomePlaced == false)
-            {
-                Vector3 checkHeight = slimeHome.GetComponent<Renderer>().bounds.size / 2;
-                float x = Random.Range(w + checkHeight.x + 10f, width - checkHeight.x - 10f);
-                float z = Random.Range(h + checkHeight.z + 10f, height - checkHeight.z - 10f);
-                float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
-                Vector3 placementLocation = new Vector3(x, y, z);
+            PlaceZones(width, height, w, h, quadType);
 
 
-                //convert to vector3 to get both x and y to keep object within map bounds
-                // float checkHeight = slimeHome.GetComponent<Renderer>().bounds.size.y / 2;
-
-
-
-
-                placementLocation.y += checkHeight.y;
-
-                GameObject SlimeBase = Instantiate(slimeHome, placementLocation, Quaternion.identity);
-
-                //  AddSpecialLocationsToArray(placementLocation);
-
-                specialLocationCoordinates.Add("slimehome", placementLocation);
-                slimeHomePlaced = true;
-
-
-            }
-
-            // Place lake
-            if (lakePlaced == false)
-            {
-                for (int i = 0; i < numberOfLakes; i++)
-                {
-                    Vector3 checkHeight = lake.GetComponent<Renderer>().bounds.size / 2;
-                    float x = Random.Range(w + checkHeight.x + 10f, width - checkHeight.x - 10f);
-                    float z = Random.Range(h + checkHeight.z + 10f, height - checkHeight.z - 10f);
-                    float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
-
-                    Vector3 placementLocation = new Vector3(x, y, z);
-
-                    placementLocation.y += checkHeight.y;
-
-                    
-                    if (CheckOverlap(placementLocation,lake) == false)
-                    {
-                        GameObject Lake = Instantiate(lake, placementLocation, Quaternion.identity);
-                        //AddSpecialLocationsToArray(placementLocation);
-                        specialLocationCoordinates.Add("lake" + i, placementLocation);
-                    }
-                    else
-                    {
-                        i--;
-                    }
-                }
-                lakePlaced = true;
-            }
-
-            // Place ruins
-            if (ruinsPlaced == false)
-            {
-                for (int i = 0; i < numberOfRuins; i++)
-                {
-                    Vector3 checkHeight = ruins.GetComponent<Renderer>().bounds.size / 2;
-
-                    float x = Random.Range(w + checkHeight.x + 10f, width - checkHeight.x - 10f);
-                    float z = Random.Range(h + checkHeight.z + 10f, height - checkHeight.z - 10f);
-
-                    float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
-
-                    Vector3 placementLocation = new Vector3(x, y, z);
-
-
-                    placementLocation.y += checkHeight.y;
-
-                    if (CheckOverlap(placementLocation, lake) == false)
-                    {
-                        GameObject Ruins = Instantiate(ruins, placementLocation, Quaternion.identity);
-                        //  AddSpecialLocationsToArray(placementLocation);
-                        specialLocationCoordinates.Add("ruins" + i, placementLocation);
-                    }
-                    else
-                    {
-                        i--;
-                    }
-
-                }
-                ruinsPlaced = true;
-            }
-
-
-
+            List<Vector3> locationList = new List<Vector3>();
             int spawnThisEnemy = 0;
+            int failed = 0;
             // place enemies
             for (int i = 0; i < numberOfEnemies; i++)
             {
@@ -297,7 +355,7 @@ public class MapCreationV2 : MonoBehaviour
 
 
 
-                if (x > 0 & x < width & z > 0 & z < height)
+                if ((x > 0 & x < width) & (z > 0 & z < height))
                 {
                     Vector3 checkHeight = ruins.GetComponent<Renderer>().bounds.size / 2;
 
@@ -327,67 +385,28 @@ public class MapCreationV2 : MonoBehaviour
                     }
 
 
-                    if (CheckOverlap(placementLocation,enemyList[spawnThisEnemy]))
+                    if (EnemyCheckOverlap(placementLocation,enemyList[spawnThisEnemy]) == false)
                     {
                         GameObject enemy = Instantiate(enemyList[spawnThisEnemy], placementLocation, Quaternion.identity);
                         enemy.transform.parent = enemyParent.transform;
-                        SpawnTraps(enemy, placementLocation,w,h,width,height);
+                        SpawnTraps2(enemy, placementLocation,w,h,width,height);
                         enemyCount++;
+                    }
+                    else if (failed > 50)
+                    {
+                        break;
                     }
                     else
                     {
                         print("enemies got overlap");
-
+                        failed++;
                         i--;
                     }
                 }
             }
 
-            int treeCount = 0;
-            // Place trees
-            for (int i = 0; i < numberOfTrees; i++)
-            {
-                //sets the number of trees grouped together
-                int treeGroupSize = Random.Range(1, 8);
-                //sets the x and z coordinates of the tree
-                float x = Random.Range(w, width);
-                float z = Random.Range(h, height);
+            PlaceTrees(width, height, w, h, quadType);
 
-                //places the trees in a group and screws the number slightly to spread them out just a bit
-                for (int a = 0; a < treeGroupSize; a++)
-                {
-                    //screws tree placement
-                    x += Random.Range(-1.5f, 1.5f);
-                    z += Random.Range(-1.5f, 1.5f);
-
-                    //uses tree location and gets the height of the terrain at that location to ensure proper object height
-                    float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
-
-                    if (x > 0 & x < width)
-                    {
-                        if (z > 0 & z < height)
-                        {
-
-                            Vector3 placementLocation = new Vector3(x, y, z);
-
-
-                            if (CheckOverlap(placementLocation, tree1) == false)
-                            {
-                                GameObject tree = Instantiate(tree1, placementLocation, transform.rotation * Quaternion.Euler(0, Random.Range(0, 359), 0));
-                                tree.transform.parent = treeParent.transform;
-                                treeCount++;
-                            }
-                        }
-                        else
-                        {
-                            a--;
-                        }
-                    }
-
-                }
-
-            }
-            Debug.Log("number of trees " + treeCount);
             // place warp points
 
 
@@ -436,6 +455,7 @@ public class MapCreationV2 : MonoBehaviour
         {
 
         }
+
     }
 
     float[,,] CreateAlphaMapQuadrant(int width, int height, int w, int h, float[,,] map, int a )
@@ -455,40 +475,158 @@ public class MapCreationV2 : MonoBehaviour
 
     bool CheckOverlap(Vector3 location, GameObject thingy)
     {
-        if (thingy.GetComponent<BoxCollider>() == true)
+        int layerMask = 1 << 8;
+        Collider[] hits = Physics.OverlapBox(location, thingy.transform.localScale, Quaternion.identity, layerMask);
+        if (hits.Length > 0)
         {
-            Collider[] hits = Physics.OverlapBox(location, thingy.transform.localScale, Quaternion.identity, 1 << 8);
-            if (hits.Length > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else if (thingy.GetComponent<CapsuleCollider>() == true)
-        {
-            Collider[] hits = Physics.OverlapCapsule(location, thingy.transform.localScale,  1 << 8);
-            if (hits.Length > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return true;
         }
         else
         {
             return false;
         }
-
     }
-    int failed = 0;
+
+    bool EnemyCheckOverlap(Vector3 location, GameObject thingy)
+    {
+        int layerMask = 1 << 8;
+        if (Physics.CheckBox(location, thingy.transform.localScale, Quaternion.identity, layerMask) == true)
+        {
+            Debug.Log("enmies got overlap");
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool TreeCheckOverlap(Vector3 location, GameObject thingy)
+    {
+        location += new Vector3(0, 20, 0);
+        int layerMask = 1 << 0;
+        layerMask = ~layerMask;
+        if (Physics.BoxCast(location + new Vector3(0,20f,0), thingy.transform.localScale / 2, Vector3.down ,Quaternion.identity,Mathf.Infinity,layerMask) == true)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    bool TrapCheckOverlap2(Vector3 location, GameObject thingy)
+    {
+        int layerMask = 1 << 0;
+        if (Physics.CheckBox(location,thingy.transform.localScale/2, Quaternion.identity) == true)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool TrapCheckOverlap(Vector3 location, GameObject thingy)
+    {
+        int layerMask = 1 << 0;
+        Collider[] hits = Physics.OverlapBox(location, thingy.transform.localScale/2,Quaternion.identity ,layerMask);
+        if (hits.Length > 0)
+        {
+            Debug.Log("trap check returned true");
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    List<Vector3> usedLocations = new List<Vector3>();
+    void SpawnTraps2(GameObject enemy, Vector3 enemyLocation, float w, float h, float width, float height)
+    {
+        int failed = 0;
+        int enemyDangerlevel = enemy.GetComponent<Enemy2>().dangerLevel;
+
+        for (int i = 0; i < enemyDangerlevel+trapsPerEnemy; i++)
+        {
+            int spawnThisTrap = Random.Range(0, trapList.Count - 1);
+
+            if (failed > 20)
+            {
+                break;
+            }
+
+            for (int k = 0; k < 1; k++)
+            {
+                k = 0;
+                Vector3 placementLocation = enemyLocation + new Vector3(Random.Range(-13f, 13f), 0, Random.Range(-15f, 15f));
+                Vector3 checkHeight = trapList[spawnThisTrap].GetComponent<Renderer>().bounds.size / 2;
+                placementLocation.y += checkHeight.y;
+
+                foreach (var item in usedLocations)
+                {
+                    if (item == placementLocation)
+                    {
+                        k--;
+                        break;
+                    }
+                    else
+                    {
+
+                    }
+                }
+                usedLocations.Clear();
+             
+
+                //mostly working now but need to fix enemies spawning in ruins ect
+
+                usedLocations.Add(placementLocation);
+
+                //if within map bounds
+                if ((placementLocation.x > 0 & placementLocation.z > 0) & (placementLocation.x < width & placementLocation.z < height) )
+                {
+                    if (Vector3.Distance(placementLocation,enemyLocation) > 2f)
+                    {
+                        if (TrapCheckOverlap2(placementLocation, trapList[spawnThisTrap]) == false)
+                        {
+                            GameObject trap = Instantiate(trapList[spawnThisTrap], placementLocation, Quaternion.identity);
+                            trap.transform.parent = trapParent.transform;
+                            trapCount++;
+                        }
+                        else if (failed > 1000)
+                        {
+                            break;
+                        }
+                        else
+                        {
+
+                            Debug.Log("traps got overlap");
+                            failed++;
+                            k--;
+                        }
+                    }
+                    else
+                    {
+                        k--;
+                    }
+                }
+                else
+                {
+                    k--;
+                }
+            }
+
+
+
+        }
+    }
+
     void SpawnTraps(GameObject enemy, Vector3 enemyLocation, float w, float h, float width, float height)
     {
-
+        int failed = 0;
         int enemyDangerLevel = enemy.GetComponent<Enemy2>().dangerLevel;
 
 
@@ -505,7 +643,10 @@ public class MapCreationV2 : MonoBehaviour
 
                 x += Random.Range(-13f, 13f);
                 z += Random.Range(-13f, 13f);
-
+                float x2 = x + Random.Range(-13f, 13f);
+                float z2 = z + Random.Range(-13f, 13f);
+                float x3 = x + Random.Range(-13f, 13f);
+                float z3 = z +Random.Range(-13f, 13f);
                 //uses tree location and gets the height of the terrain at that location to ensure proper object height
                 float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
 
@@ -515,26 +656,39 @@ public class MapCreationV2 : MonoBehaviour
                     if (z > 0 & z < height)
                     {
                         Vector3 checkHeight = trapList[spawnThisTrap].GetComponent<Renderer>().bounds.size / 2;
+
                         Vector3 placementLocation = new Vector3(x, y, z);
 
-                        placementLocation.y += checkHeight.y;
-                        float spawnDistance = Vector3.Distance(placementLocation, enemyLocation);
-
-                        if (spawnDistance >= 2f)
+                        if (Vector3.Distance(placementLocation, enemyLocation) < 3f)
                         {
-                            if (CheckOverlap(placementLocation, enemy) == false)
+                            placementLocation = new Vector3(x2, y, z2);
+                            if (Vector3.Distance(placementLocation,enemyLocation) < 3f)
                             {
-                                GameObject trap = Instantiate(trapList[spawnThisTrap], placementLocation, transform.rotation * Quaternion.Euler(0, Random.Range(0, 359), 0));
-                                trap.transform.parent = trapParent.transform;
-                                trapCount++;
-                            }
-                            else
-                            {
-                                Debug.Log("traps got overlap");
-                                i--;
+                                placementLocation = new Vector3(x3, y, z3);
                             }
                         }
-                        
+
+                        placementLocation.y += checkHeight.y;
+
+                        print("did I reach this point?");
+
+
+                        if (TrapCheckOverlap(placementLocation, enemy) == false)
+                        {
+                            GameObject trap = Instantiate(trapList[spawnThisTrap], placementLocation, Quaternion.identity);
+                            trap.transform.parent = trapParent.transform;
+                            trapCount++;
+                        }
+                        else if (failed > 10)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Debug.Log("traps got overlap");
+                            i--;
+                            failed++;
+                        }
 
                     }
                     else
