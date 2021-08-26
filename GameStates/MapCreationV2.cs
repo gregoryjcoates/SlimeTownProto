@@ -165,19 +165,8 @@ public class MapCreationV2 : MonoBehaviour
         mainTerrain.terrainData.SetAlphamaps(0, 0, map);
     }
 
-    //float[,] CreateQuadrant(float width, float height,int w, int h)
-    //{
-    //    float[,] quadrantCoordinates = new float[System.Convert.ToInt32(width),System.Convert.ToInt32(height)];
 
-    //    for ( int i = w ; i < quadrantCoordinates.GetLength(0); i++)
-    //    {
-    //        for ( int i2 = h ; i2 < quadrantCoordinates.GetLength(1); i2++)
-    //        {
 
-    //        }
-    //    }
-    //    return quadrantCoordinates;
-    //}
     void PlaceTrees(float width, float height, int w, int h, int quadType)
     {
 
@@ -389,7 +378,7 @@ public class MapCreationV2 : MonoBehaviour
                     {
                         GameObject enemy = Instantiate(enemyList[spawnThisEnemy], placementLocation, Quaternion.identity);
                         enemy.transform.parent = enemyParent.transform;
-                        SpawnTraps2(enemy, placementLocation,w,h,width,height);
+                        SpawnTraps(enemy, placementLocation,w,h,width,height);
                         enemyCount++;
                     }
                     else if (failed > 50)
@@ -472,6 +461,86 @@ public class MapCreationV2 : MonoBehaviour
         return map;
     }
 
+    //stores used locations 
+    List<Vector3> usedLocations = new List<Vector3>();
+    void SpawnTraps(GameObject enemy, Vector3 enemyLocation, float w, float h, float width, float height)
+    {
+        int failed = 0;
+        int enemyDangerlevel = enemy.GetComponent<Enemy2>().dangerLevel;
+
+        for (int i = 0; i < enemyDangerlevel + trapsPerEnemy; i++)
+        {
+            int spawnThisTrap = Random.Range(0, trapList.Count - 1);
+
+            if (failed > 20)
+            {
+                break;
+            }
+
+            for (int k = 0; k < 1; k++)
+            {
+                k = 0;
+
+                Vector3 placementLocation = enemyLocation + new Vector3(Random.Range(-13f, 13f), 0, Random.Range(-15f, 15f));
+
+                float y = mainTerrain.terrainData.GetHeight((int)enemyLocation.x, (int)enemyLocation.y);
+                placementLocation.y = y;
+
+                Vector3 checkHeight = trapList[spawnThisTrap].GetComponent<Renderer>().bounds.size / 2;
+                placementLocation.y += checkHeight.y;
+
+                foreach (var item in usedLocations)
+                {
+                    if (item == placementLocation)
+                    {
+                        k--;
+                        break;
+                    }
+                    else
+                    {
+
+                    }
+                }
+                usedLocations.Clear();
+
+
+                usedLocations.Add(placementLocation);
+
+                //if within map bounds
+                if ((placementLocation.x > 0 & placementLocation.z > 0) & (placementLocation.x < width & placementLocation.z < height))
+                {
+                    if (Vector3.Distance(placementLocation, enemyLocation) > 2f)
+                    {
+                        if (TrapCheckOverlap(placementLocation, trapList[spawnThisTrap]) == false)
+                        {
+                            GameObject trap = Instantiate(trapList[spawnThisTrap], placementLocation, Quaternion.identity);
+                            trap.transform.parent = trapParent.transform;
+                            trapCount++;
+                        }
+                        else if (failed > 1000)
+                        {
+                            break;
+                        }
+                        else
+                        {
+
+                            Debug.Log("traps got overlap");
+                            failed++;
+                            k--;
+                        }
+                    }
+                    else
+                    {
+                        k--;
+                    }
+                }
+                else
+                {
+                    k--;
+                }
+            }
+        }
+    }
 
     bool CheckOverlap(Vector3 location, GameObject thingy)
     {
@@ -516,7 +585,7 @@ public class MapCreationV2 : MonoBehaviour
             return false;
         }
     }
-    bool TrapCheckOverlap2(Vector3 location, GameObject thingy)
+    bool TrapCheckOverlap(Vector3 location, GameObject thingy)
     {
         int layerMask = 1 << 0;
         if (Physics.CheckBox(location,thingy.transform.localScale/2, Quaternion.identity) == true)
@@ -527,186 +596,5 @@ public class MapCreationV2 : MonoBehaviour
         {
             return false;
         }
-    }
-
-    bool TrapCheckOverlap(Vector3 location, GameObject thingy)
-    {
-        int layerMask = 1 << 0;
-        Collider[] hits = Physics.OverlapBox(location, thingy.transform.localScale/2,Quaternion.identity ,layerMask);
-        if (hits.Length > 0)
-        {
-            Debug.Log("trap check returned true");
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    List<Vector3> usedLocations = new List<Vector3>();
-    void SpawnTraps2(GameObject enemy, Vector3 enemyLocation, float w, float h, float width, float height)
-    {
-        int failed = 0;
-        int enemyDangerlevel = enemy.GetComponent<Enemy2>().dangerLevel;
-
-        for (int i = 0; i < enemyDangerlevel+trapsPerEnemy; i++)
-        {
-            int spawnThisTrap = Random.Range(0, trapList.Count - 1);
-
-            if (failed > 20)
-            {
-                break;
-            }
-
-            for (int k = 0; k < 1; k++)
-            {
-                k = 0;
-                Vector3 placementLocation = enemyLocation + new Vector3(Random.Range(-13f, 13f), 0, Random.Range(-15f, 15f));
-                Vector3 checkHeight = trapList[spawnThisTrap].GetComponent<Renderer>().bounds.size / 2;
-                placementLocation.y += checkHeight.y;
-
-                foreach (var item in usedLocations)
-                {
-                    if (item == placementLocation)
-                    {
-                        k--;
-                        break;
-                    }
-                    else
-                    {
-
-                    }
-                }
-                usedLocations.Clear();
-             
-
-                //mostly working now but need to fix enemies spawning in ruins ect
-
-                usedLocations.Add(placementLocation);
-
-                //if within map bounds
-                if ((placementLocation.x > 0 & placementLocation.z > 0) & (placementLocation.x < width & placementLocation.z < height) )
-                {
-                    if (Vector3.Distance(placementLocation,enemyLocation) > 2f)
-                    {
-                        if (TrapCheckOverlap2(placementLocation, trapList[spawnThisTrap]) == false)
-                        {
-                            GameObject trap = Instantiate(trapList[spawnThisTrap], placementLocation, Quaternion.identity);
-                            trap.transform.parent = trapParent.transform;
-                            trapCount++;
-                        }
-                        else if (failed > 1000)
-                        {
-                            break;
-                        }
-                        else
-                        {
-
-                            Debug.Log("traps got overlap");
-                            failed++;
-                            k--;
-                        }
-                    }
-                    else
-                    {
-                        k--;
-                    }
-                }
-                else
-                {
-                    k--;
-                }
-            }
-
-
-
-        }
-    }
-
-    void SpawnTraps(GameObject enemy, Vector3 enemyLocation, float w, float h, float width, float height)
-    {
-        int failed = 0;
-        int enemyDangerLevel = enemy.GetComponent<Enemy2>().dangerLevel;
-
-
-        for (int i = 0; i < enemyDangerLevel + trapsPerEnemy; i++)
-        {
-            int spawnThisTrap = Random.Range(0, trapList.Count - 1);
-
-            //sets the x and z 
-            float x = enemyLocation.x;
-            float z = enemyLocation.z;
-
-            {
-                //screws tree placement
-
-                x += Random.Range(-13f, 13f);
-                z += Random.Range(-13f, 13f);
-                float x2 = x + Random.Range(-13f, 13f);
-                float z2 = z + Random.Range(-13f, 13f);
-                float x3 = x + Random.Range(-13f, 13f);
-                float z3 = z +Random.Range(-13f, 13f);
-                //uses tree location and gets the height of the terrain at that location to ensure proper object height
-                float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
-
-
-                if (x > 0 & x < width)
-                {
-                    if (z > 0 & z < height)
-                    {
-                        Vector3 checkHeight = trapList[spawnThisTrap].GetComponent<Renderer>().bounds.size / 2;
-
-                        Vector3 placementLocation = new Vector3(x, y, z);
-
-                        if (Vector3.Distance(placementLocation, enemyLocation) < 3f)
-                        {
-                            placementLocation = new Vector3(x2, y, z2);
-                            if (Vector3.Distance(placementLocation,enemyLocation) < 3f)
-                            {
-                                placementLocation = new Vector3(x3, y, z3);
-                            }
-                        }
-
-                        placementLocation.y += checkHeight.y;
-
-                        print("did I reach this point?");
-
-
-                        if (TrapCheckOverlap(placementLocation, enemy) == false)
-                        {
-                            GameObject trap = Instantiate(trapList[spawnThisTrap], placementLocation, Quaternion.identity);
-                            trap.transform.parent = trapParent.transform;
-                            trapCount++;
-                        }
-                        else if (failed > 10)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            Debug.Log("traps got overlap");
-                            i--;
-                            failed++;
-                        }
-
-                    }
-                    else
-                    {
-                        i--;
-                    }
-                }
-                else
-                {
-                    i--;
-                }
-
-
-
-            }
-
-        }
-    }
-
-
+    }    
 }

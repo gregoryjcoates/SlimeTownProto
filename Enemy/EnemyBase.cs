@@ -15,6 +15,7 @@ public class EnemyBase : MonoBehaviour
     CharacterController controller;
     public bool trapped = false;
     int layerMask = 1 << 7;
+
     private void Start()
     {
         controller = gameObject.AddComponent<CharacterController>();
