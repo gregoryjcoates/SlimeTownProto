@@ -6,22 +6,17 @@ public class Goblin : MonoBehaviour
 {
     CharacterController controller;
     // must have traits
-    [SerializeField]
-    int damage = 10;
-    [SerializeField]
-    int speed = 2;
-    [SerializeField]
-    int enemyHealth = 5;
-    [SerializeField]
-    int slimeValue = 1;
-    [SerializeField]
-    int dangerLevel = 1;
-    [SerializeField]
-    float sphereDetectRange = 4f;
-    [SerializeField]
-    float sightDetectRange = 10f;
-    [SerializeField]
-    float attackRange = 1f;
+
+    //inheritied from EnemyStats
+    int damage = 0;
+    int speed = 0;
+    int enemyHealth = 0;
+    int slimeValue = 0;
+    int dangerLevel = 0;
+    float sphereDetectRange = 0;
+    float sightDetectRange = 0;
+    float attackRange = 0;
+    //
 
     bool moved = false;
     float moveTimer = 0;
@@ -46,9 +41,23 @@ public class Goblin : MonoBehaviour
 
     State activeState = State.Deciding;
 
+    private void Awake()
+    {
+        damage = gameObject.GetComponent<EnemyStats>().damage;
+        speed = gameObject.GetComponent<EnemyStats>().speed;
+        enemyHealth = gameObject.GetComponent<EnemyStats>().enemyHealth;
+        slimeValue = gameObject.GetComponent<EnemyStats>().slimeValue;
+        dangerLevel = gameObject.GetComponent<EnemyStats>().dangerLevel;
+        sphereDetectRange = gameObject.GetComponent<EnemyStats>().sphereDetectRange;
+        sightDetectRange = gameObject.GetComponent<EnemyStats>().sightDetectRange;
+        attackRange = gameObject.GetComponent<EnemyStats>().sightDetectRange;
+
+    }
+
     private void Start()
     {
         controller = gameObject.AddComponent<CharacterController>();
+
     }
 
     private void Update()

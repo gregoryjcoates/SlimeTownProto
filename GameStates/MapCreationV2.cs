@@ -466,9 +466,9 @@ public class MapCreationV2 : MonoBehaviour
     void SpawnTraps(GameObject enemy, Vector3 enemyLocation, float w, float h, float width, float height)
     {
         int failed = 0;
-        int enemyDangerlevel = enemy.GetComponent<Enemy2>().dangerLevel;
+        int enemyDangerLevel = enemy.GetComponent<EnemyStats>().dangerLevel;
 
-        for (int i = 0; i < enemyDangerlevel + trapsPerEnemy; i++)
+        for (int i = 0; i < enemyDangerLevel + trapsPerEnemy; i++)
         {
             int spawnThisTrap = Random.Range(0, trapList.Count - 1);
 
