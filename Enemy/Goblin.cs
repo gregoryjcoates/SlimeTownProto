@@ -29,6 +29,10 @@ public class Goblin : MonoBehaviour
     Vector3 playerLocation;
     Vector3 move = new Vector3(0, 0, 0);
 
+    float fixedRoation = 0;
+    float fixedPosition = 0;
+
+
     enum State
     {
         Deciding,
@@ -43,15 +47,16 @@ public class Goblin : MonoBehaviour
 
     private void Awake()
     {
-        damage = gameObject.GetComponent<EnemyStats>().damage;
-        speed = gameObject.GetComponent<EnemyStats>().speed;
-        enemyHealth = gameObject.GetComponent<EnemyStats>().enemyHealth;
-        slimeValue = gameObject.GetComponent<EnemyStats>().slimeValue;
-        dangerLevel = gameObject.GetComponent<EnemyStats>().dangerLevel;
-        sphereDetectRange = gameObject.GetComponent<EnemyStats>().sphereDetectRange;
-        sightDetectRange = gameObject.GetComponent<EnemyStats>().sightDetectRange;
-        attackRange = gameObject.GetComponent<EnemyStats>().sightDetectRange;
+        EnemyStats enemyStats = gameObject.GetComponent<EnemyStats>();
 
+        damage = enemyStats.damage;
+        speed = enemyStats.speed;
+        enemyHealth = enemyStats.enemyHealth;
+        slimeValue = enemyStats.slimeValue;
+        dangerLevel = enemyStats.dangerLevel;
+        sphereDetectRange = enemyStats.sphereDetectRange;
+        sightDetectRange = enemyStats.sightDetectRange;
+        attackRange = enemyStats.attackRange;
     }
 
     private void Start()
@@ -69,6 +74,14 @@ public class Goblin : MonoBehaviour
         Debug.Log(activeState);
         IfActiveState();
 
+        Vector3 checkHeight = this.GetComponent<Renderer>().bounds.size / 2;
+
+        if (controller.isGrounded == false)
+        {
+            transform.position = new Vector3(transform.position.x, fixedPosition + checkHeight.y, transform.position.z);
+        }
+
+        transform.eulerAngles = new Vector3(fixedRoation, transform.eulerAngles.y, fixedPosition);
     }
 
 
@@ -125,6 +138,8 @@ public class Goblin : MonoBehaviour
                     //need to somehow clamp angle 
                     transform.LookAt(playerLocation);
                     move = transform.forward;
+
+
                     controller.Move(move);
 
                     if (PlayerInFront().inFrontTrue == true)
