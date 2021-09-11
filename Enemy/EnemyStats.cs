@@ -7,7 +7,7 @@ public class EnemyStats : MonoBehaviour
     
     public int damage = 10;
 
-    public int speed = 2;
+    public int speed = 6;
 
     public int enemyHealth = 5;
 

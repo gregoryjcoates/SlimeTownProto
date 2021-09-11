@@ -9,7 +9,7 @@ public class Goblin : MonoBehaviour
 
     //inheritied from EnemyStats
     int damage = 0;
-    int speed = 0;
+    float speed = 1f;
     int enemyHealth = 0;
     int slimeValue = 0;
     int dangerLevel = 0;
@@ -19,9 +19,8 @@ public class Goblin : MonoBehaviour
     //
 
     bool moved = false;
-    float moveTimer = 0;
+    float moveTimer = 0f;
     float moveInterval = 1f;
-    bool timerEnded = true;
 
     bool trapped = false;
     int playerLayerMask = 1 << 7;
@@ -72,14 +71,8 @@ public class Goblin : MonoBehaviour
             DecideState();
         }
         Debug.Log(activeState);
+
         IfActiveState();
-
-        Vector3 checkHeight = this.GetComponent<Renderer>().bounds.size / 2;
-
-        if (controller.isGrounded == false)
-        {
-            transform.position = new Vector3(transform.position.x, fixedPosition + checkHeight.y, transform.position.z);
-        }
 
         transform.eulerAngles = new Vector3(fixedRoation, transform.eulerAngles.y, fixedPosition);
     }
@@ -124,76 +117,12 @@ public class Goblin : MonoBehaviour
     {
         if (activeState == State.Moving)
         {
-            MoveTimer();
-
-            Vector3 playerDirection =Vector3.RotateTowards(this.transform.position,playerLocation,360f,0f);
-
-            if (timerEnded == true)
-            {
-                for (int i = 0; i < 1;)
-                {
-                    Debug.Log(playerLocation);
-                    // transform.rotation *= Quaternion.LookRotation(playerDirection);
-
-                    //need to somehow clamp angle 
-                    transform.LookAt(playerLocation);
-                    move = transform.forward;
-
-
-                    controller.Move(move);
-
-                    if (PlayerInFront().inFrontTrue == true)
-                    {
-                        timerEnded = false;
-                        i++;
-                    }
-                    else
-                    {
-
-                    }
-                }
-            }
-            activeState = State.Deciding;
+            MovingState();
         }
 
         if (activeState == State.Wandering)
         {
-            MoveTimer();
-
-            if (timerEnded == true)
-            {
-                //returns a random int between 0 and 3
-                int moveDirection = Random.Range(0, 4);
-
-                if (moveDirection == 0)
-                {
-                    //move forward
-                }
-                else if (moveDirection == 1)
-                {
-                    // move left
-                    transform.rotation *= Quaternion.Euler(0, -90, 0);
-                    //transform.rotation = Quaternion.Slerp(transform.rotation,);
-
-                }
-                else if (moveDirection == 2)
-                {
-                    //move right
-                    transform.rotation *= Quaternion.Euler(0, 90, 0);
-                }
-                else
-                {
-                    // move backward
-                    transform.rotation *= Quaternion.Euler(0, 180, 0);
-                }
-
-                move = transform.forward;
-                controller.Move(move);
-
-                timerEnded = false;
-            }
-
-            activeState = State.Deciding;
+            WanderingState();
         }
 
         if (activeState == State.Attacking)
@@ -215,11 +144,50 @@ public class Goblin : MonoBehaviour
     void MovingState()
     {
         // move towards player
+
+
+        Vector3 playerDirection = Vector3.RotateTowards(this.transform.position, playerLocation, 360f, 0f);
+
+
+                // transform.rotation *= Quaternion.LookRotation(playerDirection);
+
+                //need to somehow clamp angle 
+
+                transform.LookAt(playerLocation);
+            move = transform.forward;
+
+
+                controller.Move(move * speed * Time.deltaTime);
+
+               // if (PlayerInFront().inFrontTrue == true)
+       
+            
+        
+        activeState = State.Deciding;
     }
 
     void WanderingState()
     {
         // simply wander around
+       
+
+        int moveDirection = 0;
+
+        if (Time.time > moveTimer)
+        {
+            //returns a random int between 0 and 3
+            moveDirection = Random.Range(0, 4);
+            transform.rotation *= Quaternion.Euler(0, Random.Range(-180f, 180f), 0);
+            moveTimer = +moveInterval + Time.time;
+        }
+
+
+            move = transform.forward;
+            controller.Move(move * speed * Time.deltaTime);
+            Debug.Log(move);
+
+
+        activeState = State.Deciding;
     }
 
     void AttackingState()
@@ -280,12 +248,5 @@ public class Goblin : MonoBehaviour
         }
     }
 
-    void MoveTimer()
-    {
-        if (Time.time > moveTimer)
-        {
-            moveTimer = Time.time + moveInterval;
-            timerEnded = true;
-        }
-    }
+  
 }
