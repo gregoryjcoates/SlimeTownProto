@@ -18,7 +18,6 @@ public class Abilities : MonoBehaviour
     public bool abilityFiveAdded = false;
     public Splitting splitting;
 
-    // Update is called once per frame
 
 
     //ability unlock function

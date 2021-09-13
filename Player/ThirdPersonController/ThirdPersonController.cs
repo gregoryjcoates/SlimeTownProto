@@ -13,6 +13,7 @@ public class ThirdPersonController : MonoBehaviour
     private Vector3 velocity;
     private int layerMask = 1;
 
+    public float dodgeDistance = 1f;
     public Vector3 playerLocation;
     private void Start()
 
@@ -67,6 +68,29 @@ public class ThirdPersonController : MonoBehaviour
             PlayerAttack();
         }
 
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                controller.Move(new Vector3(dodgeDistance, 0, 0));
+            }
+
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                controller.Move(new Vector3(-dodgeDistance, 0, 0));
+            }
+
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                controller.Move(new Vector3(0, 0, dodgeDistance));
+            }
+
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                controller.Move(new Vector3(0, 0, -dodgeDistance));
+            }
+
+        }
     }
 
 
