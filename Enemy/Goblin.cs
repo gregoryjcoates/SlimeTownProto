@@ -18,9 +18,11 @@ public class Goblin : MonoBehaviour
     float attackRange = 0;
     //
 
-    bool moved = false;
     float moveTimer = 0f;
     float moveInterval = 1f;
+
+    float attackTimer = 0f;
+    float attackInterval = 1f;
 
     bool trapped = false;
     int playerLayerMask = 1 << 7;
@@ -70,7 +72,6 @@ public class Goblin : MonoBehaviour
         {
             DecideState();
         }
-        Debug.Log(activeState);
 
         IfActiveState();
 
@@ -84,12 +85,12 @@ public class Goblin : MonoBehaviour
         // if not trapped allow actions
         if (trapped == false)
         {
-            Debug.Log("not trapped");
+
 
             // if not trapped and a player is near
             if (SensePlayerInRange() | PlayerInFront().inFrontTrue == true)
             {
-                Debug.Log("player in range");
+
 
                 // if not trapped and the player is within attack range
                 if ((PlayerInFront().distance <= attackRange) & (PlayerInFront().distance != 0))
@@ -103,7 +104,7 @@ public class Goblin : MonoBehaviour
             }
             else
             {
-                Debug.Log("wandering state is called");
+
                 activeState = State.Wandering;
             }
         }
@@ -127,7 +128,7 @@ public class Goblin : MonoBehaviour
 
         if (activeState == State.Attacking)
         {
-            activeState = State.Deciding;
+            AttackingState();
         }
 
         if (activeState == State.Trapped)
@@ -184,7 +185,6 @@ public class Goblin : MonoBehaviour
 
             move = transform.forward;
             controller.Move(move * speed * Time.deltaTime);
-            Debug.Log(move);
 
 
         activeState = State.Deciding;
@@ -193,6 +193,14 @@ public class Goblin : MonoBehaviour
     void AttackingState()
     {
         //when in range attack the player
+
+        if (PlayerInFront().player != null & Time.time >= attackTimer )
+        {
+            PlayerInFront().player.GetComponent<PlayerBasics>().health -= damage;
+            attackTimer = Time.time + attackInterval;
+        }
+
+        activeState = State.Deciding;
     }
 
 
@@ -229,15 +237,15 @@ public class Goblin : MonoBehaviour
     }
 
     // if the player is directly in front the enemy within sightDetectRange
-    (bool inFrontTrue,float distance) PlayerInFront()
+    (bool inFrontTrue,float distance,GameObject player) PlayerInFront()
     {
         RaycastHit hit;
 
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, sightDetectRange, playerLayerMask) == true)
         {
-            return (true,hit.distance);
+            return (true,hit.distance,hit.transform.gameObject);
         }
-        return (false,hit.distance);
+        return (false,hit.distance,null);
     }
 
     private void OnTriggerEnter(Collider other)
