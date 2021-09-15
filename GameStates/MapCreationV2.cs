@@ -24,6 +24,8 @@ public class MapCreationV2 : MonoBehaviour
     List<GameObject> trapList = new List<GameObject>();
     [SerializeField]
     List<GameObject> enemyList = new List<GameObject>();
+    [SerializeField]
+    List<GameObject> treeList = new List<GameObject>();
     
     //QuadrantTypes
     enum QuadrantType
@@ -187,7 +189,7 @@ public class MapCreationV2 : MonoBehaviour
                 //screws tree placement
                 x += Random.Range(-1.5f, 1.5f);
                 z += Random.Range(-1.5f, 1.5f);
-
+                GameObject treeToSpawn = treeList[Random.Range(0, 5)];
                 //uses tree location and gets the height of the terrain at that location to ensure proper object height
                 float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
 
@@ -195,13 +197,13 @@ public class MapCreationV2 : MonoBehaviour
                 {
                     if (z > 0 & z < height)
                     {
-
+ 
                         Vector3 placementLocation = new Vector3(x, y, z);
+                        
 
-
-                        if (TreeCheckOverlap(placementLocation, tree1) == false)
+                        if (TreeCheckOverlap(placementLocation, treeToSpawn) == false)
                         {
-                            GameObject tree = Instantiate(tree1, placementLocation, transform.rotation * Quaternion.Euler(0, Random.Range(0, 359), 0));
+                            GameObject tree = Instantiate(treeToSpawn, placementLocation,treeToSpawn.transform.rotation);
                             tree.transform.parent = treeParent.transform;
                             treeCount++;
                         }
