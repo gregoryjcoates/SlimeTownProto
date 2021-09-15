@@ -44,6 +44,10 @@ public class MapCreationV2 : MonoBehaviour
     bool slimeHomePlaced = false;
     GameObject treeParent;
 
+    // values for map creation
+    [SerializeField]
+    int numOfTrees = 48;
+
     // Values for enemy creation
     GameObject enemyParent;
     int enemyCount = 0;
@@ -70,6 +74,7 @@ public class MapCreationV2 : MonoBehaviour
 
     // for warp point placement
     Dictionary<string, Vector3> specialLocationCoordinates = new Dictionary<string, Vector3>();
+
     // the main function
     private void Awake()
     {
@@ -173,7 +178,7 @@ public class MapCreationV2 : MonoBehaviour
     {
 
         int treeCount = 0;
-        int numberOfTrees = ((int)width * (int)height) / 48;
+        int numberOfTrees = ((int)width * (int)height) / numOfTrees;
         // Place trees
         for (int i = 0; i < numberOfTrees; i++)
         {
@@ -337,6 +342,7 @@ public class MapCreationV2 : MonoBehaviour
             List<Vector3> locationList = new List<Vector3>();
             int spawnThisEnemy = 0;
             int failed = 0;
+
             // place enemies
             for (int i = 0; i < numberOfEnemies; i++)
             {
