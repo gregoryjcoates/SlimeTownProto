@@ -26,6 +26,8 @@ public class MapCreationV2 : MonoBehaviour
     List<GameObject> enemyList = new List<GameObject>();
     [SerializeField]
     List<GameObject> treeList = new List<GameObject>();
+    [SerializeField]
+    GameObject enemySpawner;
     
     //QuadrantTypes
     enum QuadrantType
@@ -50,6 +52,7 @@ public class MapCreationV2 : MonoBehaviour
 
     // Values for enemy creation
     GameObject enemyParent;
+    GameObject enemySpawnerParent;
     int enemyCount = 0;
     [SerializeField]
     int numberOfEnemies = 100;
@@ -81,9 +84,12 @@ public class MapCreationV2 : MonoBehaviour
         treeParent = new GameObject();
         enemyParent = new GameObject();
         trapParent = new GameObject();
+        enemySpawnerParent = new GameObject();
         treeParent.name = "Tree Parent";
         enemyParent.name = "Enemy Parent";
         trapParent.name = "Trap Parent";
+        enemySpawnerParent.name = "Enemy Spawner Parent";
+
     }
     private void Update()
     {
@@ -360,7 +366,7 @@ public class MapCreationV2 : MonoBehaviour
                     placementLocation.y += checkHeight.y;
 
                     // scaling system for placing enemies
-                    float distanceFromBase = Vector3.Distance(specialLocationCoordinates["slimehome"],placementLocation);
+                    float distanceFromBase = Vector3.Distance(specialLocationCoordinates["slimehome"], placementLocation);
 
                     // gives a number between 0.0 and 1.0 turning distance from slime home into a decimal
                     float difficultyScale = Mathf.InverseLerp(0f, MapSize().mapWidth, distanceFromBase);
@@ -378,15 +384,15 @@ public class MapCreationV2 : MonoBehaviour
                     }
                     else
                     {
-                        spawnThisEnemy = Random.Range(0, maxEnemies-3);
+                        spawnThisEnemy = Random.Range(0, maxEnemies - 3);
                     }
 
 
-                    if (EnemyCheckOverlap(placementLocation,enemyList[spawnThisEnemy]) == false)
+                    if (EnemyCheckOverlap(placementLocation, enemyList[spawnThisEnemy]) == false)
                     {
                         GameObject enemy = Instantiate(enemyList[spawnThisEnemy], placementLocation, Quaternion.identity);
                         enemy.transform.parent = enemyParent.transform;
-                        SpawnTraps(enemy, placementLocation,w,h,width,height);
+                        SpawnTraps(enemy, placementLocation, w, h, width, height);
                         enemyCount++;
                     }
                     else if (failed > 50)
@@ -545,6 +551,79 @@ public class MapCreationV2 : MonoBehaviour
                 else
                 {
                     k--;
+                }
+            }
+        }
+    }
+
+    //not needed
+    void SpawnEnemiesV2(float width, float height, int w, int h)
+    {
+
+        List<Vector3> locationList = new List<Vector3>();
+        int spawnThisEnemy = 0;
+        int failed = 0;
+
+        for (int i = 0; i < numberOfEnemies; i++)
+        {
+            float x = Random.Range(w, width);
+            float z = Random.Range(h, height);
+            float y = mainTerrain.terrainData.GetHeight((int)x, (int)z);
+
+
+
+            if ((x > 0 & x < width) & (z > 0 & z < height))
+            {
+                Vector3 checkHeight = ruins.GetComponent<Renderer>().bounds.size / 2;
+
+                Vector3 placementLocation = new Vector3(x, y, z);
+                placementLocation.y += checkHeight.y;
+
+                // scaling system for placing enemies
+                float distanceFromBase = Vector3.Distance(specialLocationCoordinates["slimehome"], placementLocation);
+
+                // gives a number between 0.0 and 1.0 turning distance from slime home into a decimal
+                float difficultyScale = Mathf.InverseLerp(0f, MapSize().mapWidth, distanceFromBase);
+
+
+                // the heigher difficulty scale is the stronger the enemies are
+                if (Random.value <= difficultyScale)
+                {
+                    spawnThisEnemy = Random.Range(0, maxEnemies);
+
+                    if (Random.value > 0.8f)
+                    {
+                        spawnThisEnemy = Random.Range(8, maxEnemies);
+                    }
+                }
+                else
+                {
+                    spawnThisEnemy = Random.Range(0, maxEnemies - 3);
+                }
+
+
+                if (EnemyCheckOverlap(placementLocation, enemyList[spawnThisEnemy]) == false)
+                {
+                    // GameObject enemy = Instantiate(enemyList[spawnThisEnemy], placementLocation, Quaternion.identity);
+                    GameObject eSpawner = Instantiate(enemySpawner, placementLocation, Quaternion.identity);
+
+                    eSpawner.transform.parent = enemySpawnerParent.transform;
+                    //eSpawner.GetComponent<EnemySpawner>().enemyLocation = placementLocation;
+                    eSpawner.GetComponent<EnemySpawner>().enemyType = enemyList[spawnThisEnemy];
+
+                    //enemy.transform.parent = enemyParent.transform;
+                    SpawnTraps(enemyList[spawnThisEnemy], placementLocation, w, h, width, height);
+                    enemyCount++;
+                }
+                else if (failed > 50)
+                {
+                    break;
+                }
+                else
+                {
+                    print("enemies got overlap");
+                    failed++;
+                    i--;
                 }
             }
         }

@@ -5,8 +5,12 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
   
-    Vector3 enemyLocation = new Vector3(0,0,0);
-    GameObject enenmyType = null;
+    public Vector3 enemyLocation = new Vector3(0,0,0);
+    public GameObject enemyType = null;
 
+    public void SpawnEnemy()
+    {
+        Instantiate(enemyType,enemyLocation,Quaternion.identity);
+    }
 
 }

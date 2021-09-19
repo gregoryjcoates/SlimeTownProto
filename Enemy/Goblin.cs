@@ -33,6 +33,8 @@ public class Goblin : MonoBehaviour
     float fixedRoation = 0;
     float fixedPosition = 0;
 
+    [SerializeField]
+    GameObject enemySpawner;
 
     enum State
     {
@@ -42,6 +44,7 @@ public class Goblin : MonoBehaviour
         Attacking,
         Trapped,
         Distracted,
+        Death,
     }
 
     State activeState = State.Deciding;
@@ -82,8 +85,13 @@ public class Goblin : MonoBehaviour
     // the brain of the enemy
     void DecideState()
     {
+        if (enemyHealth <= 0)
+        {
+            Debug.Log("death state");
+            activeState = State.Death;
+        }
+        else if (trapped == false)
         // if not trapped allow actions
-        if (trapped == false)
         {
 
 
@@ -139,6 +147,11 @@ public class Goblin : MonoBehaviour
         if (activeState == State.Distracted)
         {
             activeState = State.Deciding;
+        }
+
+        if (activeState == State.Death)
+        {
+            DeathState();
         }
     }
 
@@ -213,6 +226,15 @@ public class Goblin : MonoBehaviour
     {
         // you are enjoying a nice meal and thus cannot 
     }
+
+    void DeathState()
+    {
+        Debug.Log("death state got called");
+        GameObject eSpawner = Instantiate(enemySpawner, this.transform.position, Quaternion.identity);
+        eSpawner.GetComponent<EnemySpawner>().enemyLocation = this.transform.position;
+        eSpawner.GetComponent<EnemySpawner>().enemyType = gameObject;
+        gameObject.SetActive(false);
+    }    
 
     // if the player is within the radius sphereDetectRange of the enemy
     bool SensePlayerInRange()
