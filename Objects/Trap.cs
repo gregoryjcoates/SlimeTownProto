@@ -37,14 +37,23 @@ public class Trap : MonoBehaviour
             trapSprung = true;
         }
     }
-  //  private void OnCollisionEnter(Collision collision)
-  //  {
-   //     Debug.Log("collision happened");
-   //     if (collision.gameObject.tag =="Enemy" & trapSprung == false)
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log("did it work");
+        if (collision.gameObject.CompareTag("Terrain"))
+        {
+            Destroy(GetComponent<Rigidbody>());
+        }
+    }
+    //  private void OnCollisionEnter(Collision collision)
+    //  {
+    //     Debug.Log("collision happened");
+    //     if (collision.gameObject.tag =="Enemy" & trapSprung == false)
     //    {
     //        Debug.Log("trap sprung");
-     //       collision.gameObject.GetComponent<Enemy2>().Trapped(true);
-     //       trapSprung = true;
-      //  }
- //   }
+    //       collision.gameObject.GetComponent<Enemy2>().Trapped(true);
+    //       trapSprung = true;
+    //  }
+    //   }
 }

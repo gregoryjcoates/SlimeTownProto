@@ -15,6 +15,11 @@ public class ThirdPersonController : MonoBehaviour
 
     public float dodgeDistance = 1f;
     public Vector3 playerLocation;
+
+
+    // for holding trap
+    GameObject eatenTrap = null;
+
     private void Start()
 
     {
@@ -91,6 +96,28 @@ public class ThirdPersonController : MonoBehaviour
             }
 
         }
+
+        // Eat trap ability
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (eatenTrap == null)
+            {
+                int layerMask = 1 << 8;
+                if (Physics.Raycast(transform.position,transform.TransformDirection(Vector3.forward),out hit, 3f, layerMask))
+                {
+                    eatenTrap = hit.transform.gameObject;
+                }
+            }
+            else
+            {
+
+                eatenTrap = Instantiate(eatenTrap, transform.position + transform.TransformDirection(Vector3.forward), Quaternion.identity);
+                eatenTrap.AddComponent<Rigidbody>().AddRelativeForce(new Vector3(0, 100, 0));
+                eatenTrap = null;
+            }
+        }
+
+
     }
 
 
@@ -108,5 +135,11 @@ public class ThirdPersonController : MonoBehaviour
                 a.GetComponent<Enemy2>().enemyHealth -= 1;
             }
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.grey;
+        Gizmos.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 3f);
     }
 }
