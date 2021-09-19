@@ -10,32 +10,71 @@ public class EnemySpawnCircle : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(this.transform.position, this.GetComponent<SphereCollider>().radius);
     }
-    private void OnTriggerEnter(Collider collision)
+    private void OnTriggerEnter(Collider other)
     {
 
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (other.gameObject.CompareTag("Enemy"))
         {
-            Debug.Log(collision.gameObject.name);
+            Debug.Log(other.gameObject.name);
 
-            MonoBehaviour[] scripts = collision.GetComponents<MonoBehaviour>();
+            MonoBehaviour[] scripts = other.GetComponents<MonoBehaviour>();
 
             foreach (MonoBehaviour script in scripts)
             {
                 script.enabled = true;
             }
 
+            MeshRenderer[] meshes = other.GetComponents<MeshRenderer>();
 
+            foreach(MeshRenderer mesh in meshes)
+            {
+                mesh.enabled = true;
+            }
             
+        }
+
+        if (other.gameObject.CompareTag("EnviroObject"))
+        {
+
+
+            MeshRenderer[] meshes = other.GetComponents<MeshRenderer>();
+
+            foreach (MeshRenderer mesh in meshes)
+            {
+                mesh.enabled = true;
+            }
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        MonoBehaviour[] scripts = other.GetComponents<MonoBehaviour>();
-
-        foreach (MonoBehaviour script in scripts)
+        if (other.gameObject.CompareTag("Enemy"))
         {
-            script.enabled = false;
+            MonoBehaviour[] scripts = other.GetComponents<MonoBehaviour>();
+
+            foreach (MonoBehaviour script in scripts)
+            {
+                script.enabled = false;
+            }
+
+            MeshRenderer[] meshes = other.GetComponents<MeshRenderer>();
+
+            foreach (MeshRenderer mesh in meshes)
+            {
+                mesh.enabled = false;
+            }
+        }
+
+        if (other.gameObject.CompareTag("EnviroObject"))
+        {
+
+
+            MeshRenderer[] meshes = other.GetComponents<MeshRenderer>();
+
+            foreach (MeshRenderer mesh in meshes)
+            {
+                mesh.enabled = false;
+            }
         }
 
     }
